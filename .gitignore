@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.env
+.env.*
+*.pkl
+*.pcap
+logs/
+captures/
+.venv/
+venv/
+
+# Local notes (not part of the published repo)
+PROJECT_LOG.txt
+SYSTEM_REFERENCE_AND_TERMINOLOGY.txt

@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>net-guard</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+  <div class="dashboard-container">
+
+    <!-- ====================================================================
+         HEADER & SOC STATUS BAR
+         ==================================================================== -->
+    <header class="soc-header">
+      <div class="brand-section">
+        <div class="brand-shield">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>net-guard</h1>
+          <p>Passive UDP telemetry monitoring and anomaly detection</p>
+        </div>
+      </div>
+
+      <div class="header-status-badges">
+        <div class="status-badge" id="backendStatusBadge">
+          <span class="status-dot active"></span>
+          Backend: <strong style="color: #38bdf8; margin-left: 4px;">api_bridge</strong>
+        </div>
+        <div class="status-badge">
+          <span class="status-dot active"></span>
+          Interface: <strong style="color: #38bdf8; margin-left: 4px;">127.0.0.1:5005 (UDP)</strong>
+        </div>
+        <div class="status-badge" id="threatBadge">
+          <span class="status-dot active"></span>
+          Threat Level: NORMAL
+        </div>
+      </div>
+    </header>
+
+    <!-- ====================================================================
+         NAVIGATION TABS
+         ==================================================================== -->
+    <nav class="nav-tabs">
+      <button class="nav-tab-btn active" data-tab="tab-soc">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+        Live SOC Operations & Telemetry
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-flow">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Interactive Architecture & Data Flow
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-features">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        Feature Engineering & ML Math Guide
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-hardware">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+        Hardware Migration & SPAN Switch Guide
+      </button>
+    </nav>
+
+    <!-- ====================================================================
+         TAB 1: LIVE SOC OPERATIONS
+         ==================================================================== -->
+    <section id="tab-soc" class="tab-view active">
+      
+      <!-- Metrics Overview Cards -->
+      <div class="metrics-row">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">Captured Packets</span>
+            <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          </div>
+          <div class="metric-value" id="statTotalPackets">0</div>
+          <div class="metric-subtext">Passive SPAN Ingestion Stream</div>
+        </div>
+
+        <div class="metric-card alert-card">
+          <div class="metric-header">
+            <span class="metric-title">Threat Anomalies</span>
+            <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <div class="metric-value" style="color: #f43f5e;" id="statAnomalyCount">0</div>
+          <div class="metric-subtext">Flagged via DPI / ML Scoring</div>
+        </div>
+
+        <div class="metric-card purple-card">
+          <div class="metric-header">
+            <span class="metric-title">Throughput (PPS)</span>
+            <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="metric-value" id="statPPS">0.5 <span class="metric-unit">pkt/s</span></div>
+          <div class="metric-subtext">Instantaneous Packet Rate</div>
+        </div>
+
+        <div class="metric-card success-card">
+          <div class="metric-header">
+            <span class="metric-title">Inter-Arrival Time (IAT)</span>
+            <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="metric-value" id="statIAT">2000 <span class="metric-unit">ms</span></div>
+          <div class="metric-subtext">Δt between consecutive datagrams</div>
+        </div>
+
+        <div class="metric-card warning-card">
+          <div class="metric-header">
+            <span class="metric-title">Payload Entropy</span>
+            <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
+          <div class="metric-value" id="statEntropy">4.25 <span class="metric-unit">bits</span></div>
+          <div class="metric-subtext">Shannon Byte Randomness</div>
+        </div>
+      </div>
+
+      <!-- Simulation & Anomaly Trigger Control Bar -->
+      <div class="control-bar">
+        <div class="control-group">
+          <span class="control-label">Simulation Engine:</span>
+          <button class="btn btn-outline" id="btnToggleSim">⏸️ Pause Telemetry</button>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: 0.5rem;">
+            <span class="control-label">Cadence:</span>
+            <input type="range" id="cadenceSlider" min="0.5" max="5.0" step="0.5" value="2.0" style="accent-color: var(--accent-cyan);">
+            <span id="cadenceLabel" style="font-family: var(--font-mono); font-size: 0.8rem; color: #38bdf8;">2.0s</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <span class="control-label">Inject Anomaly Vector:</span>
+          <button class="btn btn-danger btn-sm" id="btnAttackFlood">⚡ Trigger UDP Flood</button>
+          <button class="btn btn-warning btn-sm" id="btnAttackMalformed">💥 Inject Fuzzing Payload</button>
+          <button class="btn btn-purple btn-sm" id="btnAttackSpoof">🌡️ Inject Sensor Spoof</button>
+        </div>
+      </div>
+
+      <!-- Live Charts Grid -->
+      <div class="dashboard-grid">
+        
+        <!-- Left: Telemetry & Traffic Charts -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Traffic Timing & Rate Metrics (Inter-Arrival Time vs PPS)
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="chart-container">
+                <canvas id="chartIAT"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+                DHT11 Environmental Sensor Telemetry (Temperature & Humidity)
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="chart-container">
+                <canvas id="chartSensor"></canvas>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: Anomaly Gauge & Deep Inspector -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          
+          <!-- Isolation Forest Anomaly Score Gauge -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                Unsupervised ML Threat Score (Isolation Forest)
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="gauge-wrapper">
+                <div class="gauge-center-text">
+                  <div class="gauge-score" id="gaugeScore">0.18</div>
+                  <div class="gauge-verdict" id="gaugeVerdict">NORMAL OPERATION</div>
+                </div>
+              </div>
+              <div class="chart-container" style="height: 130px;">
+                <canvas id="chartML"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Packet Inspector -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                Live Packet Dissection & Hex Inspector
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="inspector-box" id="packetInspectorContent">
+                <p style="color: var(--text-muted); text-align: center; padding: 1.5rem 0;">
+                  Click on any intercepted packet in the table below to inspect its Layer 2/3/4 headers, extracted ML features, and raw byte payload.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Live Packet Stream Table -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            Passive SPAN Ingestion Stream (Click row to inspect)
+          </div>
+        </div>
+        <div class="packet-stream-wrapper">
+          <table class="packet-table">
+            <thead>
+              <tr>
+                <th>Pkt #</th>
+                <th>Timestamp</th>
+                <th>Source (IP:Port)</th>
+                <th>Destination</th>
+                <th>Classification</th>
+                <th>DHT11 Telemetry</th>
+                <th>IAT</th>
+                <th>iForest Score</th>
+              </tr>
+            </thead>
+            <tbody id="packetTableBody">
+              <!-- Live Packet Rows Injected Here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ====================================================================
+         TAB 2: INTERACTIVE ARCHITECTURE & DATA FLOW
+         ==================================================================== -->
+    <section id="tab-flow" class="tab-view">
+      
+      <div class="panel" style="margin-bottom: 1.5rem;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/></svg>
+            Live Visual SPAN Telemetry & Machine Learning Flow Diagram
+          </div>
+        </div>
+        <div class="panel-body">
+          <canvas id="topologyCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Clickable Step Cards -->
+      <div class="flow-step-grid">
+        
+        <div class="flow-step-card selected" data-step-detail="step1">
+          <div class="step-num-badge">STEP 1</div>
+          <div class="flow-icon">📡</div>
+          <div class="flow-card-title">Edge Sensing & UDP Broadcast</div>
+          <div class="flow-card-desc">ESP32 reads DHT11 sensor data and sends lightweight UDP datagrams over the local subnet.</div>
+        </div>
+
+        <div class="flow-step-card" data-step-detail="step2">
+          <div class="step-num-badge">STEP 2</div>
+          <div class="flow-icon">🔀</div>
+          <div class="flow-card-title">Port Mirroring / SPAN</div>
+          <div class="flow-card-desc">TP-Link TL-SG105E duplicates all traffic from edge ports to a dedicated monitor port invisibly.</div>
+        </div>
+
+        <div class="flow-step-card" data-step-detail="step3">
+          <div class="step-num-badge">STEP 3</div>
+          <div class="flow-icon">🛡️</div>
+          <div class="flow-card-title">Passive DPI Sniffer</div>
+          <div class="flow-card-desc">NET-GUARD Python listener captures packets using BPF kernel filters without sending a single probe.</div>
+        </div>
+
+        <div class="flow-step-card" data-step-detail="step4">
+          <div class="step-num-badge">STEP 4</div>
+          <div class="flow-icon">⚙️</div>
+          <div class="flow-card-title">Feature Extraction Engine</div>
+          <div class="flow-card-desc">Calculates rolling window metrics: IAT, Shannon entropy, packet frequency, and temperature gradients.</div>
+        </div>
+
+        <div class="flow-step-card" data-step-detail="step5">
+          <div class="step-num-badge">STEP 5</div>
+          <div class="flow-icon">🧠</div>
+          <div class="flow-card-title">Isolation Forest ML</div>
+          <div class="flow-card-desc">Unsupervised tree-based anomaly detector isolates outliers without requiring prior attack labels.</div>
+        </div>
+
+        <div class="flow-step-card" data-step-detail="step6">
+          <div class="step-num-badge">STEP 6</div>
+          <div class="flow-icon">🚨</div>
+          <div class="flow-card-title">Alerting & Incident Response</div>
+          <div class="flow-card-desc">High anomaly scores trigger instant SOC alerts with rogue source IP identification and log forensics.</div>
+        </div>
+
+      </div>
+
+      <!-- Detailed Step Deep Dive Box -->
+      <div class="panel" style="margin-top: 1.5rem;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Pipeline Stage Technical Specification & Code Architecture
+          </div>
+        </div>
+        <div class="panel-body" id="stepDetailContent">
+          <h3 style="color: var(--accent-cyan); margin-bottom: 0.5rem;">Step 1: Edge Sensing & UDP Broadcast (ESP32 + DHT11)</h3>
+          <p>The ESP32 microcontroller samples ambient temperature and humidity from the DHT11 sensor every 2 seconds. It serializes this data into a JSON payload and transmits it over UDP to destination port 5005.</p>
+          <div style="background: #090e17; padding: 0.8rem; border-radius: 6px; margin: 0.8rem 0; font-family: var(--font-mono); font-size: 0.8rem;">
+            <code>IP(src="192.168.1.50", dst="192.168.1.255") / UDP(sport=52144, dport=5005) / Raw('{"temp": 24.5, "humidity": 58.2}')</code>
+          </div>
+          <p><strong>Why UDP?</strong> UDP has minimal overhead for battery/compute-constrained IoT microcontrollers, but provides no encryption or handshakes, making it critical to passively monitor with an external NIDS.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ====================================================================
+         TAB 3: FEATURE ENGINEERING & ML MATH GUIDE
+         ==================================================================== -->
+    <section id="tab-features" class="tab-view">
+      
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem;">
+          🔬 The Mathematical Anatomy of NET-GUARD Features
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 0.85rem;">
+          Machine learning models cannot process raw Ethernet bytes directly. NET-GUARD converts passive telemetry into a 5-dimensional feature vector $\mathbf{x} \in \mathbb{R}^5$ in real-time. Here is how each feature operates:
+        </p>
+      </div>
+
+      <div class="feature-breakdown-grid">
+
+        <!-- Feature 1: IAT -->
+        <div class="feature-item-card">
+          <div class="feature-header">
+            <div class="feature-name">⏱️ 1. Inter-Arrival Time (IAT)</div>
+            <span style="font-size: 0.75rem; color: #38bdf8; font-family: var(--font-mono);" id="liveIatVal">2000 ms</span>
+          </div>
+          <div class="feature-math">
+            $$\text{IAT}_i = t_i - t_{i-1}$$
+          </div>
+          <div class="feature-desc">
+            Measures the time elapsed between consecutive packet arrivals. Under normal conditions, the ESP32 transmits predictably every ~2,000 ms ($\sigma \approx 50\text{ ms}$). During a <strong>UDP volumetric DoS flood</strong>, the IAT plunges to $0.5 - 5\text{ ms}$.
+          </div>
+          <table class="feature-comp-table">
+            <thead>
+              <tr><th>Traffic State</th><th>Typical Value</th><th>Significance</th></tr>
+            </thead>
+            <tbody>
+              <tr><td style="color:#10b981;">Normal ESP32</td><td>1800 - 2200 ms</td><td>Standard periodic beacon</td></tr>
+              <tr><td style="color:#f43f5e;">DoS UDP Flood</td><td>0.1 - 10 ms</td><td>Buffer exhaustion attack</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Feature 2: Shannon Entropy -->
+        <div class="feature-item-card">
+          <div class="feature-header">
+            <div class="feature-name">📊 2. Shannon Byte Entropy</div>
+            <span style="font-size: 0.75rem; color: #38bdf8; font-family: var(--font-mono);" id="liveEntropyVal">4.25 bits</span>
+          </div>
+          <div class="feature-math">
+            $$H(X) = -\sum_{j=1}^{256} P(b_j) \log_2 P(b_j)$$
+          </div>
+          <div class="feature-desc">
+            Measures the information randomness of the payload bytes. Structured ASCII JSON has an entropy between $3.8 - 4.6\text{ bits/byte}$. Random binary fuzzing or encrypted data exfiltration spikes entropy toward $7.5 - 8.0\text{ bits/byte}$, while repeated string floods plunge it toward $1.0\text{ bit/byte}$.
+          </div>
+          <table class="feature-comp-table">
+            <thead>
+              <tr><th>Traffic State</th><th>Typical Value</th><th>Significance</th></tr>
+            </thead>
+            <tbody>
+              <tr><td style="color:#10b981;">JSON Telemetry</td><td>3.8 - 4.6 bits</td><td>Predictable ASCII character set</td></tr>
+              <tr><td style="color:#f59e0b;">Fuzzing / Exfil</td><td>&gt; 7.2 or &lt; 2.0</td><td>High randomness / Repetition</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Feature 3: Sensor Rate of Change -->
+        <div class="feature-item-card">
+          <div class="feature-header">
+            <div class="feature-name">🌡️ 3. Physical Sensor Gradient</div>
+            <span style="font-size: 0.75rem; color: #38bdf8; font-family: var(--font-mono);" id="liveGradVal">ΔT: 0.05°C/s</span>
+          </div>
+          <div class="feature-math">
+            $$\nabla T = \frac{|T_i - T_{i-1}|}{\Delta t}, \quad \nabla H = \frac{|H_i - H_{i-1}|}{\Delta t}$$
+          </div>
+          <div class="feature-desc">
+            Physical temperature cannot jump $50^\circ\text{C}$ in a 2-second interval due to thermal mass constraints. If $\nabla T > 5^\circ\text{C/s}$, this indicates physical sensor tampering, voltage glitching, or synthetic telemetry spoofing.
+          </div>
+          <table class="feature-comp-table">
+            <thead>
+              <tr><th>Traffic State</th><th>Typical Value</th><th>Significance</th></tr>
+            </thead>
+            <tbody>
+              <tr><td style="color:#10b981;">Normal Ambient</td><td>&lt; 0.2 °C/s</td><td>Natural thermal convection</td></tr>
+              <tr><td style="color:#c084fc;">Spoofed / Glitched</td><td>&gt; 15.0 °C/s</td><td>Impossible physical change</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Feature 4: Isolation Forest Scoring -->
+        <div class="feature-item-card">
+          <div class="feature-header">
+            <div class="feature-name">🌲 4. Isolation Forest Score</div>
+            <span style="font-size: 0.75rem; color: #38bdf8; font-family: var(--font-mono);" id="liveScoreVal">0.18</span>
+          </div>
+          <div class="feature-math">
+            $$s(x, n) = 2^{-\frac{\mathbb{E}(h(x))}{c(n)}}$$
+          </div>
+          <div class="feature-desc">
+            $\mathbb{E}(h(x))$ is the average tree depth required to isolate sample $x$, and $c(n)$ is the average path length of an unsuccessful search in a BST. Anomalies are isolated in very few splits (small $h(x)$), causing $s(x, n) \to 1.0$.
+          </div>
+          <table class="feature-comp-table">
+            <thead>
+              <tr><th>Anomaly Score</th><th>Decision</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr><td style="color:#10b981;">$s &lt; 0.50$</td><td>Normal Baseline</td><td>Forward telemetry</td></tr>
+              <tr><td style="color:#f43f5e;">$s \ge 0.70$</td><td>High Anomaly</td><td>Trigger SOC Alert</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ====================================================================
+         TAB 4: HARDWARE MIGRATION GUIDE
+         ==================================================================== -->
+    <section id="tab-hardware" class="tab-view">
+      
+      <div class="panel" style="margin-bottom: 1.5rem;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/></svg>
+            Physical Hardware Deployment & SPAN Port Mirroring Blueprint
+          </div>
+        </div>
+        <div class="panel-body">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
+            
+            <div style="background: #090e17; padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-subtle);">
+              <h3 style="color: #38bdf8; margin-bottom: 0.8rem;">Current: Software Simulation</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                All nodes run locally on the workstation. Scapy sends UDP packets to <code>127.0.0.1:5005</code> over the loopback interface.
+              </p>
+              <div style="background: #040810; padding: 0.8rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.78rem; color: #94a3b8;">
+                # sim_edge_node.py<br>
+                TARGET_IP = "<span style="color: #38bdf8;">127.0.0.1</span>"<br>
+                <br>
+                # nids_listener.py<br>
+                SNIFF_IFACE = "<span style="color: #38bdf8;">Npcap Loopback Adapter</span>"
+              </div>
+            </div>
+
+            <div style="background: #090e17; padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.4);">
+              <h3 style="color: #10b981; margin-bottom: 0.8rem;">Future: Physical SPAN Hardware</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                When the TP-Link TL-SG105E switch arrives, plug the ESP32 into <strong>Port 1</strong>, laptop into <strong>Port 5</strong>, and configure Port Mirroring in the switch GUI.
+              </p>
+              <div style="background: #040810; padding: 0.8rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.78rem; color: #94a3b8;">
+                # Physical ESP32 Arduino C++ Code<br>
+                WiFiUDP.beginPacket("<span style="color: #10b981;">192.168.1.255</span>", 5005);<br>
+                <br>
+                # nids_listener.py (Zero other code changes!)<br>
+                SNIFF_IFACE = "<span style="color: #10b981;">Ethernet / eth0</span>"
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Step by Step Setup on TP-Link -->
+          <h4 style="color: #fff; margin-bottom: 0.8rem;">TP-Link TL-SG105E Port Mirroring Configuration Steps:</h4>
+          <ol style="color: var(--text-secondary); font-size: 0.85rem; padding-left: 1.5rem; line-height: 1.8;">
+            <li>Connect your laptop to the TP-Link switch and open the web management interface (default: <code>192.168.0.1</code>).</li>
+            <li>Navigate to <strong>Monitoring &gt; Port Mirror</strong>.</li>
+            <li>Set <strong>Mirrored Port (Source)</strong>: Select Port 1 (ESP32) and enable Ingress & Egress.</li>
+            <li>Set <strong>Mirroring Port (Destination)</strong>: Select Port 5 (Connected to Laptop Ethernet).</li>
+            <li>Click <strong>Apply</strong>. Your laptop Ethernet port will now silently receive 100% of the raw ESP32 packet traffic!</li>
+          </ol>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/topology.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
